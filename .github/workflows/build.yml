@@ -2,23 +2,40 @@ name: Build
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ opened, synchronize, reopened ]
 
 jobs:
   build:
     name: Build and analyze
     runs-on: windows-latest
-    
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  
-      - uses: SonarSource/sonarqube-scan-action@v6
+          fetch-depth: 0
+
+      - name: Set up Java (required by Sonar Scanner)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build (if you need a build step)
+        run: |
+          echo "Add your build commands here (msbuild/dotnet/mvn/npm etc.)"
+          # e.g. mvn -B -DskipTests package
+
+      - name: SonarQube analyze
+        uses: SonarSource/sonarqube-scan-action@v6
+        with:
+          # optional: pass scanner CLI arguments; remove or adjust if you use sonar-project.properties
+          args: >
+            -Dsonar.projectKey=your-project-key
+            -Dsonar.projectName="Your Project Name"
+            -Dsonar.sources=.
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          run: sonar-scanner
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-     
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
